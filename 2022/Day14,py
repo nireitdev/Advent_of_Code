@@ -1,0 +1,142 @@
+#!/bin/python3
+
+# AOC 2022 - --- Day 14: Regolith Reservoir ---
+import time
+
+ARCHIVO = "dia14.txt"
+
+GRID_ANCHO  = 1000
+
+
+import os
+
+def graficar( grilla:list ):
+    def clear():
+        command = 'clear'
+        if os.name in ('nt', 'dos'):  
+            command = 'cls'
+        os.system(command)
+
+    clear()
+    for yy in range(0,PROFUNDIDAD_MAXIMA + 2):
+        out = "".join(grilla[yy][MIN_X-10:MAX_X+10])
+        print(out)
+    time.sleep(0.1)
+#def graficar()
+
+
+def linea(grilla:list,coord1: set, coord2:set):
+    x1,y1 = coord1
+    x2,y2 = coord2
+
+    inc_x = 1
+    if x2 < x1:
+        inc_x = -1
+    inc_y = 1
+    if y2 < y1:
+        inc_y = -1
+
+    for xx in range( x1,x2 + inc_x , inc_x):
+        for yy in range(y1,y2 + inc_y, inc_y):
+            grilla[yy][xx] = '#'
+#def linea()
+
+
+def caida_arena(grilla:list, coord_start:set)->int:
+
+    start = coord_start
+
+    x, y = coord_start
+    last = (x, y)
+
+    while(y < PROFUNDIDAD_MAXIMA):
+        grilla[last[1]][last[0]] = '.'
+        last = (x, y)
+
+        #para ver animacion:
+        # graficar(grilla)
+
+        if grilla[y+1][x] == '.':
+            grilla[y+1][x] = 'o'
+            y += 1
+            continue
+
+        if grilla[y+1][x-1] == '.':
+            grilla[y+1][x-1] = 'o'
+            x -= 1
+            y += 1
+            continue
+
+        if grilla[y+1][x+1] == '.':
+            grilla[y+1][x+1] = 'o'
+            x += 1
+            y += 1
+            continue
+
+        break
+
+    if y >= PROFUNDIDAD_MAXIMA:
+        return 1   #primera parte
+    elif (x,y) == start:
+        return 2   #segunda parte
+    else:
+        return  0  #se cae fuera
+
+#def caida()
+
+PROFUNDIDAD_MAXIMA = 0
+MIN_X = 1000
+MAX_X = 0
+
+if __name__ == "__main__":
+    f = open(ARCHIVO, "r")
+    lines = f.readlines()
+
+    grilla = [ [ '.' for x in range(GRID_ANCHO) ] for x in range(GRID_ANCHO)]
+
+    for ll in lines:
+        xy = ll.strip().split("->")
+        for ii in range(len(xy)):
+            if ii+1 == len(xy):
+                break
+            xy_ii_1 = xy[ii].split(',')
+            xy_ii_2 = xy[ii+1].split(',')
+
+            coord1 = ( int(xy_ii_1[0]) ,int(xy_ii_1[1]) )
+            coord2 = ( int(xy_ii_2[0]) ,int(xy_ii_2[1]) )
+
+            linea(grilla,  coord1, coord2 )
+
+            #Determino max profundidad
+            if coord1[1] > PROFUNDIDAD_MAXIMA:
+                PROFUNDIDAD_MAXIMA = int(xy_ii_1[1])
+            if coord1[0] > MAX_X:
+                MAX_X = coord1[0]
+            if coord1[0] < MIN_X:
+                MIN_X = coord1[0]
+
+    #Guardo grilla
+    grilla_parte2 = [grilla[x][::] for x in range(len(grilla))]
+
+
+    #Parte 1:
+    ii = 0
+    while(True):
+        if caida_arena(grilla,(500,0)) == 1:
+            graficar(grilla)
+            print("Parte 1: grano de arena que quedan atrapados=", ii)   #674
+            break
+        ii+=1
+
+
+    #Parte 2: aparece una barrera infinita en PROFUNDIDAD_MAXIMA + 2
+    PROFUNDIDAD_MAXIMA += 2
+    linea(grilla_parte2, (0,PROFUNDIDAD_MAXIMA),( GRID_ANCHO -1 , PROFUNDIDAD_MAXIMA))
+    ii = 0
+    while(True):
+        if caida_arena(grilla_parte2,(500,0)) == 2:
+            graficar(grilla_parte2)
+            print("Parte 2: grano de arena que quedan atrapados=", ii+1)    #24958
+            break
+        ii+=1
+
