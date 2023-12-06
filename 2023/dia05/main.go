@@ -39,11 +39,6 @@ type Mapper struct {
 	Ranges []Range
 }
 
-type SubRange struct {
-	Inicio int
-	Fin    int
-}
-
 func main() {
 
 	f, err := os.Open("input.txt")
@@ -132,7 +127,7 @@ func main() {
 	// 2 minutos en un Ryzen 7 bitch!
 
 	i := 0
-	resultado := make(chan int, 2)
+	resultado := make(chan int)
 
 	startPt2 := time.Now()
 
@@ -148,7 +143,7 @@ func main() {
 			min_loc := math.MaxInt
 			start := time.Now()
 			fmt.Printf("Inicio rango : %d, %d \n", seedMin, seedMax)
-			for seed := seedMin; seed <= seedMax; s++ {
+			for seed := seedMin; seed <= seedMax; seed++ {
 				valor := seed
 				for _, m := range Mapeos {
 					valor = BusquedaDestino(m.Ranges, valor)
